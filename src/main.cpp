@@ -1,8 +1,12 @@
 #include <Arduino.h>
 #include <Adafruit_NeoPixel.h>
-#include "Music.cpp"                                                      
+#include "Music.cpp"
 
 int sigState = 0;
+
+int globalSensorA0Value = 0;
+int globalSensorA1Value = 0;
+int globalSensorA2Value = 0;
 
 Adafruit_NeoPixel strip = Adafruit_NeoPixel(60, ledID, NEO_GRB + NEO_KHZ800);
 Music music             = Music();
@@ -39,7 +43,7 @@ void reset()
 {
     strip.setBrightness(0);
     strip.show();
-    noTone(speakerID); 
+    noTone(speakerID);
     sigState = 0;
 }
 
@@ -63,16 +67,32 @@ void net()
 
 int getSensorValue()
 {
-    sigState = digitalRead(sensorID1);
-    if (sigState != HIGH) {
-        sigState = digitalRead(sensorID1);
-    }
+  int sensorA0Value = analogRead("A0");
+  Serial.println("sensor a0 value:");
+  Serial.println(sensorA0Value);
 
-    if (sigState != HIGH) {
-        sigState = digitalRead(sensorID3);
-    }
+  int sensorA1Value = analogRead("A1");
+  Serial.println("sensor a1 value:");
+  Serial.println(sensorA1Value);
 
-    return sigState;
+  int sensorA2Value = analogRead("A2");
+  Serial.println("sensor a2 value:");
+  Serial.println(sensorA2Value);
+
+  int A0ValueDifferential = abs(sensorA0Value - globalSensorA0Value);
+  globalSensorA0Value = sensorA0Value;
+
+  int A1ValueDifferential = abs(sensorA1Value - globalSensorA1Value);
+  globalSensorA1Value = sensorA1Value;
+
+  int A2ValueDifferential = abs(sensorA2Value - globalSensorA2Value);
+  globalSensorA2Value = sensorA2Value;
+
+  if(A0ValueDifferential >= 300 && A1ValueDifferential >= 300 && A2ValueDifferential >= 300)
+    return HIGH;
+  else
+    return LOW;
+
 }
 
 void loop()
